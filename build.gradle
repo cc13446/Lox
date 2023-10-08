@@ -1,0 +1,65 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'application'
+}
+
+group = 'com.cc.lox'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+}
+
+// 配置版本
+def groovyVersion = "4.0.5"
+def spockVersion = "2.3-groovy-4.0"
+def apacheCommonsLangVersion = "3.12.0"
+def apacheCommonsCollectionsVersion = "4.4"
+def jacksonDatabindVersion = "2.15.2"
+def lombokVersion = "1.18.28"
+def slf4jVersion = "2.0.7"
+
+// 公共依赖
+dependencies {
+    // groovy
+    implementation(platform("org.apache.groovy:groovy-bom:$groovyVersion"))
+    implementation("org.apache.groovy:groovy")
+
+    // spock
+    implementation(platform("org.spockframework:spock-bom:$spockVersion"))
+    testImplementation("org.spockframework:spock-core")
+    testImplementation("org.spockframework:spock-junit4")
+    testImplementation("junit:junit:4.13.2")
+
+    // apache utils
+    implementation("org.apache.commons:commons-lang3:$apacheCommonsLangVersion")
+    implementation("org.apache.commons:commons-collections4:$apacheCommonsCollectionsVersion")
+
+    // jackson-databind
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
+
+    // lombok
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    // slf4j
+    implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events = Set.of(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        showStandardStreams = true
+    }
+}
