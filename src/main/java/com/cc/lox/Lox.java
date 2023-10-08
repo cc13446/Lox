@@ -81,7 +81,7 @@ public class Lox {
      * @param line    行号
      * @param message 信息
      */
-    public static void report(int line, String message) {
+    public static void error(int line, String message) {
         System.err.println("[line " + line + "] Error " + ": " + message);
         hadError = true;
     }
