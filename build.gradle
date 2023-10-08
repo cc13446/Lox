@@ -8,6 +8,7 @@ plugins {
 group = 'com.cc.lox'
 version = '1.0-SNAPSHOT'
 
+
 repositories {
     mavenCentral()
 }
@@ -62,4 +63,13 @@ test {
         events = Set.of(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         showStandardStreams = true
     }
+}
+
+application {
+    mainClass = "com.cc.lox.Lox"
+}
+
+run {
+    standardInput = System.in
+    standardOutput = System.out
 }
