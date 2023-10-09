@@ -1,6 +1,6 @@
-package com.cc.loc.token
+package com.cc.loc.scanner
 
-import com.cc.lox.token.Scanner
+import com.cc.lox.scanner.Scanner
 import spock.lang.Specification
 import spock.lang.Unroll
 

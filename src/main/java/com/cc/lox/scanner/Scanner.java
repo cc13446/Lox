@@ -1,15 +1,15 @@
-package com.cc.lox.token;
+package com.cc.lox.scanner;
 
 import com.cc.lox.Lox;
-import com.cc.lox.token.type.TokenMatchFunction;
-import com.cc.lox.token.type.TokenMetaType;
-import com.cc.lox.token.type.TokenType;
+import com.cc.lox.scanner.type.TokenMatchFunction;
+import com.cc.lox.scanner.type.TokenMetaType;
+import com.cc.lox.scanner.type.TokenType;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.cc.lox.token.type.TokenType.*;
+import static com.cc.lox.scanner.type.TokenType.*;
 
 /**
  * 分词扫描器

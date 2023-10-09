@@ -1,4 +1,4 @@
-package com.cc.lox.token.type;
+package com.cc.lox.scanner.type;
 
 /**
  * @author cc

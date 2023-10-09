@@ -1,10 +1,10 @@
-package com.cc.lox.token.type;
+package com.cc.lox.scanner.type;
 
-import com.cc.lox.token.Scanner;
+import com.cc.lox.scanner.Scanner;
 import lombok.Getter;
 
-import static com.cc.lox.token.Scanner.*;
-import static com.cc.lox.token.type.TokenMetaType.*;
+import static com.cc.lox.scanner.Scanner.*;
+import static com.cc.lox.scanner.type.TokenMetaType.*;
 
 /**
  * token 类型

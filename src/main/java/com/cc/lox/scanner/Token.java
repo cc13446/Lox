@@ -1,6 +1,6 @@
-package com.cc.lox.token;
+package com.cc.lox.scanner;
 
-import com.cc.lox.token.type.TokenType;
+import com.cc.lox.scanner.type.TokenType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
