@@ -139,9 +139,7 @@ public class Scanner {
         return true;
     };
 
-    private static final Map<String, TokenType> KEY_WORD_MAP = Arrays.stream(values())
-            .filter(t -> t.getType() == TokenMetaType.KEYWORD)
-            .collect(Collectors.toMap(TokenType::getCode, t -> t));
+    private final Map<String, TokenType> KEY_WORD_MAP = Arrays.stream(values()).filter(t -> t.getType() == TokenMetaType.KEYWORD).collect(Collectors.toMap(TokenType::getCode, t -> t));
 
     private final String source;
 
