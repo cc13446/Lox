@@ -1,8 +1,9 @@
 package com.cc.lox;
 
+import com.cc.lox.interpreter.ExpressionInterpreter;
+import com.cc.lox.interpreter.RuntimeError;
 import com.cc.lox.parser.Parser;
 import com.cc.lox.parser.expression.Expression;
-import com.cc.lox.parser.printer.ExpressionPrinter;
 import com.cc.lox.scanner.Scanner;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
@@ -24,6 +25,8 @@ import java.util.Objects;
 public class Lox {
 
     private static boolean hadError = false;
+
+    private static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         System.out.println("Lox start");
@@ -57,6 +60,7 @@ public class Lox {
                 run(line);
             }
             hadError = false;
+            hadRuntimeError = false;
         }
     }
 
@@ -69,6 +73,12 @@ public class Lox {
     private static void runScript(String script) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(script));
         run(new String(bytes, Charset.defaultCharset()));
+        if (hadError) {
+            System.exit(65);
+        }
+        if (hadRuntimeError) {
+            System.exit(70);
+        }
     }
 
     /**
@@ -89,7 +99,13 @@ public class Lox {
         if (hadError) {
             return;
         }
-        System.out.println(new ExpressionPrinter().print(expression));
+
+        ExpressionInterpreter interpreter = new ExpressionInterpreter();
+        String res = interpreter.interpret(expression);
+        if (Objects.nonNull(res)) {
+            System.out.println(res);
+        }
+
     }
 
     /**
@@ -106,7 +122,8 @@ public class Lox {
      * @param message 信息
      */
     public static void error(int line, String where, String message) {
-        System.err.println("[line " + line + "]" + where + "Error " + ": " + message);
+        System.out.println("[line " + line + "]" + where + "Error " + ": " + message);
+        hadError = true;
     }
 
     /**
@@ -119,6 +136,16 @@ public class Lox {
         } else {
             error(token.getLine(), " at '" + token.getLexeme() + "'", message);
         }
+    }
+
+    /**
+     * 报告运行时错误
+     * @param error 错误
+     */
+    public static void runtimeError(RuntimeError error) {
+        System.out.println(error.getMessage() +
+                "\n[line " + error.getToken().getLine() + "]");
+        hadRuntimeError = true;
     }
 
 }

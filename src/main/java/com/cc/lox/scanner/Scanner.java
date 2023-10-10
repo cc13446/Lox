@@ -83,12 +83,12 @@ public class Scanner {
         char cur;
         while ((cur = scanner.peekCharAndNext()) != sign && !scanner.isAtEnd()) {
             if (cur == '\n') {
-                scanner.line++;
+                scanner.addLine();
             }
         }
 
-        if (scanner.isAtEnd()) {
-            Lox.error(scanner.line, "Unterminated string.");
+        if (scanner.isAtEnd() && scanner.peekPreviousChar() != sign) {
+            Lox.error(scanner.getLine(), "Unterminated string.");
             return true;
         }
         return true;
@@ -184,6 +184,20 @@ public class Scanner {
     }
 
     /**
+     * add line
+     */
+    private void addLine() {
+        this.line++;
+    }
+
+    /**
+     * @return line
+     */
+    private int getLine() {
+        return line;
+    }
+
+    /**
      * @return 是否扫描结束
      */
     private boolean isAtEnd() {
@@ -209,7 +223,7 @@ public class Scanner {
             peekCharAndNext();
         } else if (result.getType() == TokenMetaType.SPLIT) {
             if (result == SPLASH_N) {
-                line++;
+                this.addLine();
             }
         } else if (result == STRING) {
             String value = source.substring(start + 1, current - 1);
@@ -293,5 +307,15 @@ public class Scanner {
             return '\0';
         }
         return source.charAt(current + 1);
+    }
+
+    /**
+     * @return 上一个的 char, 结尾返回 \0
+     */
+    private char peekPreviousChar() {
+        if (current - 1 < 0) {
+            return '\0';
+        }
+        return source.charAt(current - 1);
     }
 }

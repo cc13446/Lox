@@ -1,11 +1,11 @@
 package com.cc.loc.expression.printer
 
-import com.cc.lox.scanner.Scanner
+
 import com.cc.lox.parser.expression.impl.BinaryExpression
 import com.cc.lox.parser.expression.impl.GroupingExpression
 import com.cc.lox.parser.expression.impl.LiteralExpression
 import com.cc.lox.parser.expression.impl.UnaryExpression
-import com.cc.lox.parser.printer.ExpressionPrinter
+import com.cc.lox.parser.visitor.ExpressionPrinter
 import com.cc.lox.scanner.Token
 import com.cc.lox.scanner.type.TokenType
 import spock.lang.Specification
