@@ -1,4 +1,4 @@
-package com.cc.loc.expression
+package com.cc.loc.expression.printer
 
 import com.cc.lox.scanner.Scanner
 import com.cc.lox.parser.expression.impl.BinaryExpression

@@ -1,13 +1,21 @@
 package com.cc.lox;
 
+import com.cc.lox.parser.Parser;
+import com.cc.lox.parser.expression.Expression;
+import com.cc.lox.parser.printer.ExpressionPrinter;
+import com.cc.lox.scanner.Scanner;
+import com.cc.lox.scanner.Token;
+import com.cc.lox.scanner.type.TokenType;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
-import java.util.StringTokenizer;
 
 /**
  * @author cc
@@ -45,7 +53,9 @@ public class Lox {
             if (Objects.isNull(line)) {
                 break;
             }
-            run(line);
+            if (StringUtils.isNoneBlank(line)) {
+                run(line);
+            }
             hadError = false;
         }
     }
@@ -67,14 +77,19 @@ public class Lox {
      * @param script 脚本
      */
     private static void run(String script) {
-        StringTokenizer tokenizer = new StringTokenizer(script, "\n");
-        while (tokenizer.hasMoreTokens()) {
-            String line = tokenizer.nextToken();
-            System.out.println(line);
-            if (hadError) {
-                System.exit(65);
-            }
+        // 扫猫
+        Scanner scanner = new Scanner(script);
+        List<Token> tokens = scanner.scanTokens();
+
+        // 解析
+        Parser parser = new Parser(tokens);
+        Expression expression = parser.parse();
+
+        // Stop if there was a syntax error.
+        if (hadError) {
+            return;
         }
+        System.out.println(new ExpressionPrinter().print(expression));
     }
 
     /**
@@ -82,9 +97,28 @@ public class Lox {
      * @param message 信息
      */
     public static void error(int line, String message) {
-        System.err.println("[line " + line + "] Error " + ": " + message);
-        hadError = true;
+        error(line, " ", message);
     }
 
+    /**
+     * @param line    行号
+     * @param where   where
+     * @param message 信息
+     */
+    public static void error(int line, String where, String message) {
+        System.err.println("[line " + line + "]" + where + "Error " + ": " + message);
+    }
+
+    /**
+     * @param token   token
+     * @param message 信息
+     */
+    public static void error(Token token, String message) {
+        if (token.getType() == TokenType.EOF) {
+            error(token.getLine(), " at end", message);
+        } else {
+            error(token.getLine(), " at '" + token.getLexeme() + "'", message);
+        }
+    }
 
 }

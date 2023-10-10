@@ -17,8 +17,7 @@ class ScannerTest extends Specification {
         def target = new Scanner(source)
 
         when:
-        target.scanTokens()
-        def res = target.getResult().stream().map { a -> a.getLexeme() }.collect(Collectors.toList())
+        def res = target.scanTokens().stream().map { a -> a.getLexeme() }.collect(Collectors.toList())
         then:
         res == result
 

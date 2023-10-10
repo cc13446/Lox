@@ -168,16 +168,11 @@ public class Scanner {
     }
 
     /**
+     * 扫描分词
+     *
      * @return 扫描结果
      */
-    public List<Token> getResult() {
-        return List.copyOf(tokens);
-    }
-
-    /**
-     * 扫描分词
-     */
-    public void scanTokens() {
+    public List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
             start = current;
@@ -185,6 +180,7 @@ public class Scanner {
         }
 
         tokens.add(new Token(EOF, "", null, line));
+        return tokens;
     }
 
     /**
