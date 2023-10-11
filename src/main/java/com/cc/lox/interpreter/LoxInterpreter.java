@@ -7,6 +7,7 @@ import com.cc.lox.parser.expression.ExpressionVisitor;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.parser.statement.StatementVisitor;
+import com.cc.lox.parser.statement.impl.BlockStatement;
 import com.cc.lox.parser.statement.impl.ExpressionStatement;
 import com.cc.lox.parser.statement.impl.PrintStatement;
 import com.cc.lox.parser.statement.impl.VarStatement;
@@ -23,7 +24,7 @@ import java.util.Objects;
  */
 public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
-    private final Environment environment = new Environment();
+    private Environment environment = new Environment();
 
     private final StringBuilder print = new StringBuilder();
 
@@ -31,6 +32,10 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
         return print.toString();
     }
 
+    /**
+     * 执行语句
+     * @param statements 语句
+     */
     public void interpret(List<Statement> statements) {
         try {
             for (Statement statement : statements) {
@@ -39,6 +44,31 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
+    }
+
+    /**
+     * 执行一个语法快
+     * @param statements 语句
+     * @param environment 当前环境
+     */
+    private void executeBlock(List<Statement> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+
+            for (Statement statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    @Override
+    public Void visitBlockStatement(BlockStatement statement) {
+        Environment newEnv = new Environment(this.environment);
+        executeBlock(statement.getStatements(), newEnv);
+        return null;
     }
 
     @Override
@@ -233,6 +263,7 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     /**
      * 执行语句
+     *
      * @param statement 语句
      */
     private void execute(Statement statement) {

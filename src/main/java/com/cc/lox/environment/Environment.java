@@ -5,6 +5,7 @@ import com.cc.lox.scanner.Token;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 保存运行时变量
@@ -14,10 +15,24 @@ import java.util.Map;
  */
 public class Environment {
 
+    /**
+     * 对外围环境的引用
+     */
+    private final Environment enclosing;
+
     private final Map<String, Object> values = new HashMap<>();
+
+    public Environment() {
+        enclosing = null;
+    }
+
+    public Environment(Environment enclosing) {
+        this.enclosing = enclosing;
+    }
 
     /**
      * 定义全局变量
+     *
      * @param token token
      * @param value value
      */
@@ -36,6 +51,9 @@ public class Environment {
         if (values.containsKey(name.getLexeme())) {
             return values.get(name.getLexeme());
         }
+        if (Objects.nonNull(enclosing)) {
+            return enclosing.get(name);
+        }
 
         throw new RuntimeError(name, "Undefined variable '" + name.getLexeme() + "'.");
     }
@@ -43,12 +61,18 @@ public class Environment {
 
     /**
      * 给全局变量附值
-     * @param name token
+     *
+     * @param name  token
      * @param value value
      */
     public void assign(Token name, Object value) {
         if (values.containsKey(name.getLexeme())) {
             values.put(name.getLexeme(), value);
+            return;
+        }
+
+        if (Objects.nonNull(enclosing)) {
+            enclosing.assign(name, value);
             return;
         }
 

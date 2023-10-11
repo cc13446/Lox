@@ -4,6 +4,7 @@ import com.cc.lox.Lox;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
+import com.cc.lox.parser.statement.impl.BlockStatement;
 import com.cc.lox.parser.statement.impl.ExpressionStatement;
 import com.cc.lox.parser.statement.impl.PrintStatement;
 import com.cc.lox.parser.statement.impl.VarStatement;
@@ -169,7 +170,7 @@ public class Parser {
 
     /**
      * 语句
-     * statement -> exprStmt | printStmt ;
+     * statement -> exprStmt | printStmt | block;
      *
      * @return statement
      */
@@ -178,7 +179,28 @@ public class Parser {
             return printStatement();
         }
 
+        if (matchCurrentTokenAndNext(LEFT_BRACE)) {
+            return new BlockStatement(block());
+        }
+
         return expressionStatement();
+    }
+
+    /**
+     * 语句
+     * block -> "{" declaration* "}" ;
+     *
+     * @return statement
+     */
+    private List<Statement> block() {
+        List<Statement> statements = new ArrayList<>();
+
+        while (!checkCurrent(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consumeToken(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
     }
 
     /**
