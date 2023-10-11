@@ -29,6 +29,11 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
 
 
     @Override
+    public String visitAssignExpression(AssignExpression expression) {
+        return parenthesize(expression.getName().getLexeme(), expression.getValue());
+    }
+
+    @Override
     public String visitBinaryExpression(BinaryExpression expression) {
         return parenthesize(expression.getOperator().getLexeme(), expression.getLeft(), expression.getRight());
     }

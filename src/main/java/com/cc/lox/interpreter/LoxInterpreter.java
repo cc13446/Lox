@@ -68,6 +68,13 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     }
 
     @Override
+    public Object visitAssignExpression(AssignExpression expression) {
+        Object value = evaluate(expression.getValue());
+        environment.assign(expression.getName(), value);
+        return value;
+    }
+
+    @Override
     public Object visitBinaryExpression(BinaryExpression expression) {
         Object left = evaluate(expression.getLeft());
         Object right = evaluate(expression.getRight());

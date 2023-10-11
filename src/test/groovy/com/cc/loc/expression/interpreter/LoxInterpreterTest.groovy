@@ -26,10 +26,11 @@ class LoxInterpreterTest extends Specification {
 
         where:
 
-        source                    | result
-        """print 1+1;"""          | "2"
-        """print "aa" + "a";"""   | "aaa"
-        """print 1==1;"""         | "true"
-        """var a = 1; print a;""" | "1"
+        source                           | result
+        """print 1+1;"""                 | "2"
+        """print "aa" + "a";"""          | "aaa"
+        """print 1==1;"""                | "true"
+        """var a = 1; print a;"""        | "1"
+        """var a = 1; a = 2; print a;""" | "2"
     }
 }

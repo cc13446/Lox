@@ -16,10 +16,19 @@ public class Environment {
 
     private final Map<String, Object> values = new HashMap<>();
 
+    /**
+     * 定义全局变量
+     * @param token token
+     * @param value value
+     */
     public void define(Token token, Object value) {
         values.put(token.getLexeme(), value);
     }
 
+    /**
+     * @param name token
+     * @return 变量的值
+     */
     public Object get(Token name) {
         if (values.containsKey(name.getLexeme())) {
             return values.get(name.getLexeme());
@@ -29,4 +38,17 @@ public class Environment {
     }
 
 
+    /**
+     * 给全局变量附值
+     * @param name token
+     * @param value value
+     */
+    public void assign(Token name, Object value) {
+        if (values.containsKey(name.getLexeme())) {
+            values.put(name.getLexeme(), value);
+            return;
+        }
+
+        throw new RuntimeError(name, "Undefined variable '" + name.getLexeme() + "'.");
+    }
 }

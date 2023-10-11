@@ -209,12 +209,34 @@ public class Parser {
 
     /**
      * 表达式
-     * expression -> equality;
+     * expression -> assignment;
      *
      * @return Expression
      */
     private Expression expression() {
-        return equality();
+        return assignment();
+    }
+
+
+    /**
+     * 附值
+     * assignment -> IDENTIFIER "=" assignment | equality ;
+     *
+     * @return Expression
+     */
+    private Expression assignment() {
+        Expression expr = equality();
+        if (matchCurrentTokenAndNext(EQUAL)) {
+            Token equals = previousToken();
+            Expression value = assignment();
+            if (expr instanceof VariableExpression) {
+                Token name = ((VariableExpression)expr).getName();
+                return new AssignExpression(name, value);
+            }
+            throw error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     /**
