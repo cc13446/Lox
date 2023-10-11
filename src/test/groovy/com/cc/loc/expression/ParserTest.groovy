@@ -1,7 +1,7 @@
 package com.cc.loc.expression
 
 import com.cc.lox.parser.Parser
-import com.cc.lox.parser.visitor.ExpressionPrinter
+import com.cc.lox.parser.printer.ExpressionPrinter
 import com.cc.lox.scanner.Scanner
 import spock.lang.Specification
 
@@ -19,7 +19,7 @@ class ParserTest extends Specification {
         when:
         Parser parser = new Parser(scanner.scanTokens())
 
-        def res = new ExpressionPrinter().print(parser.parse())
+        def res = new ExpressionPrinter().print(parser.parseExpression())
         then:
         res == result
 

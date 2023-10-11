@@ -6,9 +6,13 @@ import com.cc.lox.parser.expression.impl.BinaryExpression;
 import com.cc.lox.parser.expression.impl.GroupingExpression;
 import com.cc.lox.parser.expression.impl.LiteralExpression;
 import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.statement.Statement;
+import com.cc.lox.parser.statement.impl.ExpressionStatement;
+import com.cc.lox.parser.statement.impl.PrintStatement;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.cc.lox.scanner.type.TokenType.*;
@@ -30,9 +34,25 @@ public class Parser {
     }
 
     /**
+     * program -> statement* EOF ;
+     *
      * @return 解析好的语法树，如果解析失败则返回null
      */
-    public Expression parse() {
+     public List<Statement> parse() {
+        List<Statement> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
+        }
+
+        return statements;
+    }
+
+
+    /**
+     *
+     * @return 解析好的表达式，如果解析失败则返回null
+     */
+    public Expression parseExpression() {
         try {
             return expression();
         } catch (ParserException error) {
@@ -111,6 +131,45 @@ public class Parser {
     private boolean checkCurrent(TokenType type) {
         if (isAtEnd()) return false;
         return peekToken().getType() == type;
+    }
+
+    /**
+     * 语句
+     * statement -> exprStmt | printStmt ;
+     *
+     * @return statement
+     */
+    private Statement statement() {
+        if (matchCurrentTokenAndNext(PRINT)) {
+            return printStatement();
+        }
+
+        return expressionStatement();
+    }
+
+    /**
+     * 输出语句
+     * <p>
+     * printStmt -> "print" expression ";" ;
+     *
+     * @return statement
+     */
+    private Statement printStatement() {
+        Expression value = expression();
+        consumeToken(SEMICOLON, "Expect ';' after value.");
+        return new PrintStatement(value);
+    }
+
+    /**
+     * 表达式语句
+     * exprStmt -> expression ";" ;
+     *
+     * @return statement
+     */
+    private Statement expressionStatement() {
+        Expression value = expression();
+        consumeToken(SEMICOLON, "Expect ';' after value.");
+        return new ExpressionStatement(value);
     }
 
 

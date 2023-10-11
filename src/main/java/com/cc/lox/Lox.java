@@ -1,9 +1,9 @@
 package com.cc.lox;
 
-import com.cc.lox.interpreter.ExpressionInterpreter;
+import com.cc.lox.interpreter.LoxInterpreter;
 import com.cc.lox.interpreter.RuntimeError;
 import com.cc.lox.parser.Parser;
-import com.cc.lox.parser.expression.Expression;
+import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.scanner.Scanner;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
@@ -93,19 +93,15 @@ public class Lox {
 
         // 解析
         Parser parser = new Parser(tokens);
-        Expression expression = parser.parse();
+        List<Statement> statements = parser.parse();
 
         // Stop if there was a syntax error.
         if (hadError) {
             return;
         }
 
-        ExpressionInterpreter interpreter = new ExpressionInterpreter();
-        String res = interpreter.interpret(expression);
-        if (Objects.nonNull(res)) {
-            System.out.println(res);
-        }
-
+        LoxInterpreter interpreter = new LoxInterpreter();
+        interpreter.interpret(statements);
     }
 
     /**

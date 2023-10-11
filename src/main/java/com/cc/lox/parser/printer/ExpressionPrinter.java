@@ -1,4 +1,4 @@
-package com.cc.lox.parser.visitor;
+package com.cc.lox.parser.printer;
 
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;

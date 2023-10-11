@@ -1,9 +1,13 @@
 package com.cc.lox.parser.expression.impl;
 
-import com.cc.lox.parser.expression.Expression;
-import com.cc.lox.parser.expression.ExpressionVisitor;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import com.cc.lox.parser.expression.Expression;
+import com.cc.lox.parser.expression.ExpressionVisitor;
+import com.cc.lox.scanner.Token;
+import com.cc.lox.parser.expression.Expression;
 
 @AllArgsConstructor
 @Getter

@@ -7,8 +7,13 @@ import com.cc.lox.parser.expression.impl.BinaryExpression;
 import com.cc.lox.parser.expression.impl.GroupingExpression;
 import com.cc.lox.parser.expression.impl.LiteralExpression;
 import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.statement.Statement;
+import com.cc.lox.parser.statement.StatementVisitor;
+import com.cc.lox.parser.statement.impl.ExpressionStatement;
+import com.cc.lox.parser.statement.impl.PrintStatement;
 import com.cc.lox.scanner.Token;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,16 +22,37 @@ import java.util.Objects;
  * @author cc
  * @date 2023/10/10
  */
-public class ExpressionInterpreter implements ExpressionVisitor<Object> {
+public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
-    public String interpret(Expression expression) {
+    private final StringBuilder print = new StringBuilder();
+
+    public String getPrint() {
+        return print.toString();
+    }
+
+    public void interpret(List<Statement> statements) {
         try {
-            Object value = evaluate(expression);
-            return stringify(value);
+            for (Statement statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
-            return null;
         }
+    }
+
+    @Override
+    public Void visitExpressionStatement(ExpressionStatement statement) {
+        evaluate(statement.getExpression());
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStatement(PrintStatement statement) {
+        Object value = evaluate(statement.getExpression());
+        String out = stringify(value);
+        System.out.println(out);
+        this.print.append(out);
+        return null;
     }
 
     @Override
@@ -179,4 +205,14 @@ public class ExpressionInterpreter implements ExpressionVisitor<Object> {
     private Object evaluate(Expression expression) {
         return expression.accept(this);
     }
+
+
+    /**
+     * 执行语句
+     * @param statement 语句
+     */
+    private void execute(Statement statement) {
+        statement.accept(this);
+    }
+
 }
