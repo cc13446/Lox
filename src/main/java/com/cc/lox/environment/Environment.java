@@ -22,6 +22,9 @@ public class Environment {
      * @param value value
      */
     public void define(Token token, Object value) {
+        if (values.containsKey(token.getLexeme())) {
+            throw new RuntimeError(token, "Duplicate defined variable '" + token.getLexeme() + "'.");
+        }
         values.put(token.getLexeme(), value);
     }
 
