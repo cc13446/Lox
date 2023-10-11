@@ -4,10 +4,12 @@ import com.cc.lox.parser.expression.impl.BinaryExpression;
 import com.cc.lox.parser.expression.impl.GroupingExpression;
 import com.cc.lox.parser.expression.impl.LiteralExpression;
 import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.expression.impl.VariableExpression;
 
 public interface ExpressionVisitor<R> {
     R visitBinaryExpression(BinaryExpression expression);
     R visitGroupingExpression(GroupingExpression expression);
     R visitLiteralExpression(LiteralExpression expression);
     R visitUnaryExpression(UnaryExpression expression);
+    R visitVariableExpression(VariableExpression expression);
 }

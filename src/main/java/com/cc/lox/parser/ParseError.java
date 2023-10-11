@@ -4,8 +4,8 @@ package com.cc.lox.parser;
  * @author cc
  * @date 2023/10/10
  */
-public class ParserException extends RuntimeException {
-    public ParserException(String message) {
+public class ParseError extends RuntimeException {
+    public ParseError(String message) {
         super(message);
     }
 }

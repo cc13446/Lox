@@ -1,16 +1,15 @@
 package com.cc.lox.interpreter;
 
 import com.cc.lox.Lox;
+import com.cc.lox.environment.Environment;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;
-import com.cc.lox.parser.expression.impl.BinaryExpression;
-import com.cc.lox.parser.expression.impl.GroupingExpression;
-import com.cc.lox.parser.expression.impl.LiteralExpression;
-import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.parser.statement.StatementVisitor;
 import com.cc.lox.parser.statement.impl.ExpressionStatement;
 import com.cc.lox.parser.statement.impl.PrintStatement;
+import com.cc.lox.parser.statement.impl.VarStatement;
 import com.cc.lox.scanner.Token;
 
 import java.util.List;
@@ -23,6 +22,8 @@ import java.util.Objects;
  * @date 2023/10/10
  */
 public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
+
+    private final Environment environment = new Environment();
 
     private final StringBuilder print = new StringBuilder();
 
@@ -52,6 +53,17 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
         String out = stringify(value);
         System.out.println(out);
         this.print.append(out);
+        return null;
+    }
+
+    @Override
+    public Void visitVarStatement(VarStatement statement) {
+
+        if (Objects.isNull(statement.getInitializer())) {
+            this.environment.define(statement.getName(), null);
+            return null;
+        }
+        this.environment.define(statement.getName(), evaluate(statement.getInitializer()));
         return null;
     }
 
@@ -123,6 +135,11 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
                 throw new RuntimeError(expression.getOperator(), "Unknown unaryExpression token");
         }
 
+    }
+
+    @Override
+    public Object visitVariableExpression(VariableExpression expression) {
+        return this.environment.get(expression.getName());
     }
 
     /**

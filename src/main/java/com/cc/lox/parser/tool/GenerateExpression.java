@@ -27,12 +27,14 @@ public class GenerateExpression {
                 "Binary   : Expression left, Token operator, Expression right",
                 "Grouping : Expression expression",
                 "Literal  : Object value",
-                "Unary    : Token operator, Expression right"
+                "Unary    : Token operator, Expression right",
+                "Variable : Token name"
         ));
 
         all.put("Statement", Arrays.asList(
                 "Expression : Expression expression",
-                "Print      : Expression expression"
+                "Print      : Expression expression",
+                "Var        : Token name, Expression initializer"
         ));
 
         for (Map.Entry<String, List<String>> entry : all.entrySet()) {

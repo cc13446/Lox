@@ -28,6 +28,8 @@ public class Lox {
 
     private static boolean hadRuntimeError = false;
 
+    private static final LoxInterpreter INTERPRETER = new LoxInterpreter();
+
     public static void main(String[] args) throws IOException {
         System.out.println("Lox start");
         if (args.length > 1) {
@@ -100,8 +102,7 @@ public class Lox {
             return;
         }
 
-        LoxInterpreter interpreter = new LoxInterpreter();
-        interpreter.interpret(statements);
+        INTERPRETER.interpret(statements);
     }
 
     /**

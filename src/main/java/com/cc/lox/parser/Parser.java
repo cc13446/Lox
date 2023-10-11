@@ -2,13 +2,11 @@ package com.cc.lox.parser;
 
 import com.cc.lox.Lox;
 import com.cc.lox.parser.expression.Expression;
-import com.cc.lox.parser.expression.impl.BinaryExpression;
-import com.cc.lox.parser.expression.impl.GroupingExpression;
-import com.cc.lox.parser.expression.impl.LiteralExpression;
-import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.parser.statement.impl.ExpressionStatement;
 import com.cc.lox.parser.statement.impl.PrintStatement;
+import com.cc.lox.parser.statement.impl.VarStatement;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
@@ -34,19 +32,18 @@ public class Parser {
     }
 
     /**
-     * program -> statement* EOF ;
+     * program -> declaration* EOF ;
      *
      * @return 解析好的语法树，如果解析失败则返回null
      */
      public List<Statement> parse() {
         List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         return statements;
     }
-
 
     /**
      *
@@ -55,14 +52,14 @@ public class Parser {
     public Expression parseExpression() {
         try {
             return expression();
-        } catch (ParserException error) {
+        } catch (ParseError error) {
             return null;
         }
     }
 
-    private ParserException error(Token token, String message) {
+    private ParseError error(Token token, String message) {
         Lox.error(token, message);
-        return new ParserException(message);
+        return new ParseError(message);
     }
 
     /**
@@ -131,6 +128,43 @@ public class Parser {
     private boolean checkCurrent(TokenType type) {
         if (isAtEnd()) return false;
         return peekToken().getType() == type;
+    }
+
+
+    /**
+     * 声明
+     * declaration -> varDeclaration | statement ;
+     *
+     * @return statement
+     */
+    private Statement declaration() {
+        try {
+            if (matchCurrentTokenAndNext(VAR)) {
+                return varDeclaration();
+            }
+            return statement();
+        } catch (ParseError error) {
+            synchronize();
+            return null;
+        }
+    }
+
+    /**
+     * 变量声明
+     * varDeclaration -> "var" IDENTIFIER ( "=" expression )? ";" ;
+     *
+     * @return statement
+     */
+    private Statement varDeclaration() {
+        Token name = consumeToken(IDENTIFIER, "Expect variable name.");
+
+        Expression initializer = null;
+        if (matchCurrentTokenAndNext(EQUAL)) {
+            initializer = expression();
+        }
+
+        consumeToken(SEMICOLON, "Expect ';' after variable declaration.");
+        return new VarStatement(name, initializer);
     }
 
     /**
@@ -275,7 +309,7 @@ public class Parser {
 
     /**
      * 终止符
-     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"  | IDENTIFIER ;
      *
      * @return expression
      */
@@ -298,6 +332,9 @@ public class Parser {
             Expression expr = expression();
             consumeToken(RIGHT_PAREN, "Expect ')' after expression.");
             return new GroupingExpression(expr);
+        }
+        if (matchCurrentTokenAndNext(IDENTIFIER)) {
+            return new VariableExpression(previousToken());
         }
         throw error(peekToken(), "Expect expression.");
     }

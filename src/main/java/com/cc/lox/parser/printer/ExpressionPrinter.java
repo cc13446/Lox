@@ -2,10 +2,7 @@ package com.cc.lox.parser.printer;
 
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;
-import com.cc.lox.parser.expression.impl.BinaryExpression;
-import com.cc.lox.parser.expression.impl.GroupingExpression;
-import com.cc.lox.parser.expression.impl.LiteralExpression;
-import com.cc.lox.parser.expression.impl.UnaryExpression;
+import com.cc.lox.parser.expression.impl.*;
 
 /**
  * @author cc
@@ -52,5 +49,10 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     @Override
     public String visitUnaryExpression(UnaryExpression expression) {
         return parenthesize(expression.getOperator().getLexeme(), expression.getRight());
+    }
+
+    @Override
+    public String visitVariableExpression(VariableExpression expression) {
+        return parenthesize(expression.getName().getLexeme());
     }
 }
