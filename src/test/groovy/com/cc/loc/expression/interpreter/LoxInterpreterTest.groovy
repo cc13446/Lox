@@ -26,12 +26,56 @@ class LoxInterpreterTest extends Specification {
 
         where:
 
-        source                                              | result
-        """print 1+1;"""                                    | "2"
-        """print "aa" + "a";"""                             | "aaa"
-        """print 1==1;"""                                   | "true"
-        """var a = 1; print a;"""                           | "1"
-        """var a = 1; a = 2; print a;"""                    | "2"
-        """var a = 1; {var a = a + 1; print a;} print a;""" | "21"
+        source | result
+        """
+            print 1 + 1;
+        """
+               | "2"
+        """
+            print "aa" + "a";
+        """
+               | "aaa"
+        """
+            print 1 == 1;
+        """
+               | "true"
+        """
+            var a = 1; 
+            print a;
+        """
+               | "1"
+        """
+            var a = 1; 
+            a = 2; 
+            print a;
+        """
+               | "2"
+        """
+            var a = 1; 
+            {
+                var a = a + 1; 
+                print a;
+            } 
+            print a;
+        """
+               | "21"
+        """
+            var a = 1; 
+            if (a == 1) {
+                print a;
+            } 
+            print 2;
+        """
+               | "12"
+        """
+            var a = 1; 
+            if (a == 2 or a == 3) {
+                print a;
+            } else {
+                print a + 1;
+            }
+            print 2;
+        """
+               | "22"
     }
 }

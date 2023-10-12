@@ -52,6 +52,11 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     }
 
     @Override
+    public String visitLogicalExpression(LogicalExpression expression) {
+        return parenthesize(expression.getOperator().getType().name(), expression.getLeft(), expression.getRight());
+    }
+
+    @Override
     public String visitUnaryExpression(UnaryExpression expression) {
         return parenthesize(expression.getOperator().getLexeme(), expression.getRight());
     }

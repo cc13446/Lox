@@ -7,11 +7,9 @@ import com.cc.lox.parser.expression.ExpressionVisitor;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.parser.statement.StatementVisitor;
-import com.cc.lox.parser.statement.impl.BlockStatement;
-import com.cc.lox.parser.statement.impl.ExpressionStatement;
-import com.cc.lox.parser.statement.impl.PrintStatement;
-import com.cc.lox.parser.statement.impl.VarStatement;
+import com.cc.lox.parser.statement.impl.*;
 import com.cc.lox.scanner.Token;
+import com.cc.lox.scanner.type.TokenType;
 
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +72,16 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     @Override
     public Void visitExpressionStatement(ExpressionStatement statement) {
         evaluate(statement.getExpression());
+        return null;
+    }
+
+    @Override
+    public Void visitIfStatement(IfStatement statement) {
+        if(isTruthy(evaluate(statement.getCondition()))) {
+            execute(statement.getThenBranch());
+        } else if (Objects.nonNull(statement.getElseBranch())) {
+            execute(statement.getElseBranch());
+        }
         return null;
     }
 
@@ -156,6 +164,23 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     @Override
     public Object visitLiteralExpression(LiteralExpression expression) {
         return expression.getValue();
+    }
+
+    @Override
+    public Object visitLogicalExpression(LogicalExpression expression) {
+        Object left = evaluate(expression.getLeft());
+
+        if (expression.getOperator().getType() == TokenType.OR) {
+            if (isTruthy(left)) {
+                return left;
+            }
+        } else {
+            if (!isTruthy(left)) {
+                return left;
+            }
+        }
+
+        return evaluate(expression.getRight());
     }
 
     @Override

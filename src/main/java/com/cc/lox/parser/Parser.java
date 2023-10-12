@@ -4,10 +4,7 @@ import com.cc.lox.Lox;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
-import com.cc.lox.parser.statement.impl.BlockStatement;
-import com.cc.lox.parser.statement.impl.ExpressionStatement;
-import com.cc.lox.parser.statement.impl.PrintStatement;
-import com.cc.lox.parser.statement.impl.VarStatement;
+import com.cc.lox.parser.statement.impl.*;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
@@ -37,7 +34,7 @@ public class Parser {
      *
      * @return 解析好的语法树，如果解析失败则返回null
      */
-     public List<Statement> parse() {
+    public List<Statement> parse() {
         List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(declaration());
@@ -47,7 +44,6 @@ public class Parser {
     }
 
     /**
-     *
      * @return 解析好的表达式，如果解析失败则返回null
      */
     public Expression parseExpression() {
@@ -170,7 +166,7 @@ public class Parser {
 
     /**
      * 语句
-     * statement -> exprStmt | printStmt | block;
+     * statement -> exprStmt | ifStmt | printStmt | block;
      *
      * @return statement
      */
@@ -183,7 +179,31 @@ public class Parser {
             return new BlockStatement(block());
         }
 
+        if (matchCurrentTokenAndNext(IF)) {
+            return ifStatement();
+        }
+
         return expressionStatement();
+    }
+
+    /**
+     * 条件
+     * ifStmt -> "if" "(" expression ")" statement ( "else" statement )? ;
+     *
+     *
+     * @return expression
+     */
+    private Statement ifStatement() {
+        consumeToken(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expression condition = expression();
+        consumeToken(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Statement thenBranch = statement();
+        Statement elseBranch = null;
+        if (matchCurrentTokenAndNext(ELSE)) {
+            elseBranch = statement();
+        }
+        return new IfStatement(condition, thenBranch, elseBranch);
     }
 
     /**
@@ -242,20 +262,56 @@ public class Parser {
 
     /**
      * 附值
-     * assignment -> IDENTIFIER "=" assignment | equality ;
+     * assignment -> IDENTIFIER "=" assignment | logic_or ;
      *
      * @return Expression
      */
     private Expression assignment() {
-        Expression expr = equality();
+        Expression expr = or();
         if (matchCurrentTokenAndNext(EQUAL)) {
             Token equals = previousToken();
             Expression value = assignment();
             if (expr instanceof VariableExpression) {
-                Token name = ((VariableExpression)expr).getName();
+                Token name = ((VariableExpression) expr).getName();
                 return new AssignExpression(name, value);
             }
             throw error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    /**
+     * or
+     * logic_or -> logic_and ( "or" logic_and )* ;
+     *
+     * @return Expression
+     */
+    private Expression or() {
+        Expression expr = and();
+
+        while (matchCurrentTokenAndNext(OR)) {
+            Token operator = previousToken();
+            Expression right = and();
+            expr = new LogicalExpression(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    /**
+     * and
+     * logic_and -> equality ( "and" equality )* ;
+     *
+     * @return Expression
+     */
+    private Expression and() {
+        Expression expr = equality();
+
+        while (matchCurrentTokenAndNext(AND)) {
+            Token operator = previousToken();
+            Expression right = equality();
+            expr = new LogicalExpression(expr, operator, right);
         }
 
         return expr;
