@@ -9,7 +9,9 @@ import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.cc.lox.scanner.type.TokenType.*;
 
@@ -166,7 +168,7 @@ public class Parser {
 
     /**
      * 语句
-     * statement -> exprStmt | ifStmt | printStmt | whileStmt | block;
+     * statement -> exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
      *
      * @return statement
      */
@@ -187,7 +189,55 @@ public class Parser {
             return whileStatement();
         }
 
+        if (matchCurrentTokenAndNext(FOR)) {
+            return forStatement();
+        }
+
         return expressionStatement();
+    }
+
+
+    /**
+     * 循环
+     * forStmt -> "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+     *
+     * @return expression
+     */
+    private Statement forStatement() {
+        consumeToken(LEFT_PAREN, "Expect '(' after 'for'.");
+        Statement init;
+        if (matchCurrentTokenAndNext(SEMICOLON)) {
+            init = null;
+        } else if (matchCurrentTokenAndNext(VAR)) {
+            init = varDeclaration();
+        } else {
+            init = expressionStatement();
+        }
+
+        Expression condition = null;
+        if (!checkCurrent(SEMICOLON)) {
+            condition = expression();
+        }
+        consumeToken(SEMICOLON, "Expect ';' after loop condition.");
+
+        Expression increment = null;
+        if (!checkCurrent(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consumeToken(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Statement body = statement();
+        if (Objects.nonNull(increment)) {
+            body = new BlockStatement(Arrays.asList(body, new ExpressionStatement(increment)));
+        }
+        if (Objects.isNull(condition)) {
+            condition = new LiteralExpression(true);
+        }
+        body = new WhileStatement(condition, body);
+        if (Objects.nonNull(init)) {
+            body = new BlockStatement(Arrays.asList(init, body));
+        }
+        return body;
     }
 
     /**
