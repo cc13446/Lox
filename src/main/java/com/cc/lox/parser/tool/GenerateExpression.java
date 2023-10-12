@@ -38,6 +38,7 @@ public class GenerateExpression {
                 "Expression : Expression expression",
                 "If         : Expression condition, Statement thenBranch, Statement elseBranch",
                 "Print      : Expression expression",
+                "While      : Expression condition, Statement body",
                 "Var        : Token name, Expression initializer"
         ));
 

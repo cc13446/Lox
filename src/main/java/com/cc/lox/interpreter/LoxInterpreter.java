@@ -95,6 +95,14 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     }
 
     @Override
+    public Void visitWhileStatement(WhileStatement statement) {
+        while (isTruthy(evaluate(statement.getCondition()))) {
+            execute(statement.getBody());
+        }
+        return null;
+    }
+
+    @Override
     public Void visitVarStatement(VarStatement statement) {
 
         if (Objects.isNull(statement.getInitializer())) {

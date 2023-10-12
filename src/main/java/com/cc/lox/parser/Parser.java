@@ -166,7 +166,7 @@ public class Parser {
 
     /**
      * 语句
-     * statement -> exprStmt | ifStmt | printStmt | block;
+     * statement -> exprStmt | ifStmt | printStmt | whileStmt | block;
      *
      * @return statement
      */
@@ -183,13 +183,31 @@ public class Parser {
             return ifStatement();
         }
 
+        if (matchCurrentTokenAndNext(WHILE)) {
+            return whileStatement();
+        }
+
         return expressionStatement();
+    }
+
+    /**
+     * 循环
+     * whileStmt -> "while" "(" expression ")" statement ;
+     *
+     * @return expression
+     */
+    private Statement whileStatement() {
+        consumeToken(LEFT_PAREN, "Expect '(' after 'while'.");
+        Expression condition = expression();
+        consumeToken(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Statement body = statement();
+        return new WhileStatement(condition, body);
     }
 
     /**
      * 条件
      * ifStmt -> "if" "(" expression ")" statement ( "else" statement )? ;
-     *
      *
      * @return expression
      */

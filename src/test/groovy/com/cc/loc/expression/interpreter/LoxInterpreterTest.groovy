@@ -77,5 +77,13 @@ class LoxInterpreterTest extends Specification {
             print 2;
         """
                | "22"
+        """
+            var a = 1;
+            while (a != 10) {
+                a = a + 1;
+            }
+            print a;
+        """
+                | "10"
     }
 }
