@@ -132,7 +132,7 @@ public class Parser {
 
     /**
      * 声明
-     * declaration -> varDeclaration | statement ;
+     * declaration -> funDeclaration | varDeclaration | statement ;
      *
      * @return statement
      */
@@ -141,11 +141,40 @@ public class Parser {
             if (matchCurrentTokenAndNext(VAR)) {
                 return varDeclaration();
             }
+
+            if (matchCurrentTokenAndNext(FUN)) {
+                return function("function");
+            }
             return statement();
         } catch (ParseError error) {
             synchronize();
             return null;
         }
+    }
+
+
+    /**
+     * funDeclaration -> "fun" function ;
+     *
+     * @param kind kind
+     * @return statement
+     */
+    private FunctionStatement function(String kind) {
+        Token name = consumeToken(IDENTIFIER, "Expect " + kind + " name.");
+        consumeToken(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        List<Token> parameters = new ArrayList<>();
+        if (!checkCurrent(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    throw error(peekToken(), "Can't have more than 255 parameters.");
+                }
+                parameters.add(consumeToken(IDENTIFIER, "Expect parameter name."));
+            } while (matchCurrentTokenAndNext(COMMA));
+        }
+        consumeToken(RIGHT_PAREN, "Expect ')' after parameters.");
+        consumeToken(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Statement> body = block();
+        return new FunctionStatement(name, parameters, body);
     }
 
     /**
@@ -168,7 +197,7 @@ public class Parser {
 
     /**
      * 语句
-     * statement -> exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
+     * statement -> exprStmt | forStmt | ifStmt | printStmt | whileStmt | block | returnStmt;
      *
      * @return statement
      */
@@ -193,7 +222,28 @@ public class Parser {
             return forStatement();
         }
 
+        if (matchCurrentTokenAndNext(RETURN)) {
+            return returnStatement();
+        }
+
         return expressionStatement();
+    }
+
+    /**
+     * return
+     * returnStmt -> "return" expression? ";" ;
+     *
+     * @return statement
+     */
+    private Statement returnStatement() {
+        Token keyword = previousToken();
+        Expression value = null;
+        if (!checkCurrent(SEMICOLON)) {
+            value = expression();
+        }
+
+        consumeToken(SEMICOLON, "Expect ';' after return value.");
+        return new ReturnStatement(keyword, value);
     }
 
 
@@ -461,7 +511,7 @@ public class Parser {
 
     /**
      * 一元运算
-     * unary -> ( "!" | "-" ) unary | primary
+     * unary -> ( "!" | "-" ) unary | call
      *
      * @return expression
      */
@@ -472,7 +522,47 @@ public class Parser {
             return new UnaryExpression(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    /**
+     * 函数调用
+     * call -> primary ( "(" arguments? ")" )* ;
+     *
+     * @return expression
+     */
+    private Expression call() {
+        Expression expression = primary();
+        while (!Thread.interrupted()) {
+            if (matchCurrentTokenAndNext(LEFT_PAREN)) {
+                expression = finishCall(expression);
+            } else {
+                break;
+            }
+        }
+        return expression;
+    }
+
+    /**
+     * arguments -> expression ( "," expression )* ;
+     *
+     * @param callee 函数调用者
+     * @return 函数调用
+     */
+    private Expression finishCall(Expression callee) {
+        List<Expression> arguments = new ArrayList<>();
+        if (!checkCurrent(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 255) {
+                    throw error(peekToken(), "Can't have more than 255 arguments.");
+                }
+                arguments.add(expression());
+            } while (matchCurrentTokenAndNext(COMMA));
+        }
+
+        Token paren = consumeToken(RIGHT_PAREN, "Expect ')' after arguments.");
+
+        return new CallExpression(callee, paren, arguments);
     }
 
     /**

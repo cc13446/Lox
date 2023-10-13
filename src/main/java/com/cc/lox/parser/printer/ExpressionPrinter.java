@@ -39,6 +39,17 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     }
 
     @Override
+    public String visitCallExpression(CallExpression expression) {
+        Expression[] expressions = new Expression[expression.getArguments().size() + 1];
+        expressions[0] = expression.getCallee();
+        for (int i = 0; i < expression.getArguments().size(); i++) {
+            expressions[i + 1] = expression.getArguments().get(i);
+        }
+
+        return parenthesize("call", expressions);
+    }
+
+    @Override
     public String visitGroupingExpression(GroupingExpression expression) {
         return parenthesize("group", expression.getExpression());
     }

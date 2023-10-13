@@ -3,9 +3,7 @@ package com.cc.lox.environment;
 import com.cc.lox.interpreter.RuntimeError;
 import com.cc.lox.scanner.Token;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 保存运行时变量
@@ -28,6 +26,25 @@ public class Environment {
 
     public Environment(Environment enclosing) {
         this.enclosing = enclosing;
+    }
+
+
+    /**
+     * @return 不可变的闭包环境
+     */
+    public Environment toClosure() {
+        List<Environment> all = new ArrayList<>();
+        Environment env = this;
+        while(Objects.nonNull(env)) {
+            all.add(env);
+            env = env.enclosing;
+        }
+
+        Environment result = new Environment();
+        for (int i = all.size() - 1; i >= 0; i--) {
+            result.values.putAll(all.get(i).values);
+        }
+        return result;
     }
 
     /**

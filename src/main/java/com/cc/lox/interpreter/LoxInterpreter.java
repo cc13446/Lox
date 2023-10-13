@@ -2,6 +2,8 @@ package com.cc.lox.interpreter;
 
 import com.cc.lox.Lox;
 import com.cc.lox.environment.Environment;
+import com.cc.lox.function.LoxCallable;
+import com.cc.lox.function.impl.LoxFunction;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;
 import com.cc.lox.parser.expression.impl.*;
@@ -11,6 +13,7 @@ import com.cc.lox.parser.statement.impl.*;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,9 +25,29 @@ import java.util.Objects;
  */
 public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
-    private Environment environment = new Environment();
+    private final Environment globals = new Environment();
+    private Environment environment = new Environment(globals);
 
     private final StringBuilder print = new StringBuilder();
+
+    public LoxInterpreter() {
+        globals.define(new Token(TokenType.FUN, "clock", "clock", -1), new LoxCallable() {
+            @Override
+            public int getArity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(LoxInterpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() {
+                return "global fun clock";
+            }
+        });
+    }
 
     public String getPrint() {
         return print.toString();
@@ -32,6 +55,7 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     /**
      * 执行语句
+     *
      * @param statements 语句
      */
     public void interpret(List<Statement> statements) {
@@ -46,10 +70,11 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     /**
      * 执行一个语法快
-     * @param statements 语句
+     *
+     * @param statements  语句
      * @param environment 当前环境
      */
-    private void executeBlock(List<Statement> statements, Environment environment) {
+    public void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.environment;
         try {
             this.environment = environment;
@@ -76,8 +101,20 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     }
 
     @Override
+    public Void visitFunctionStatement(FunctionStatement statement) {
+        LoxFunction function = new LoxFunction(statement, environment.toClosure());
+        environment.define(statement.getName(), function);
+        return null;
+    }
+
+    @Override
+    public Void visitReturnStatement(ReturnStatement statement) {
+        return null;
+    }
+
+    @Override
     public Void visitIfStatement(IfStatement statement) {
-        if(isTruthy(evaluate(statement.getCondition()))) {
+        if (isTruthy(evaluate(statement.getCondition()))) {
             execute(statement.getThenBranch());
         } else if (Objects.nonNull(statement.getElseBranch())) {
             execute(statement.getElseBranch());
@@ -162,6 +199,26 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
             default:
                 throw new RuntimeError(expression.getOperator(), "Unknown binaryExpression token");
         }
+    }
+
+    @Override
+    public Object visitCallExpression(CallExpression expression) {
+        Object callee = evaluate(expression.getCallee());
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expression argument : expression.getArguments()) {
+            arguments.add(evaluate(argument));
+        }
+
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expression.getParen(), "Can only call functions and classes.");
+        }
+
+        LoxCallable function = (LoxCallable) callee;
+        if (arguments.size() != function.getArity()) {
+            throw new RuntimeError(expression.getParen(), "Expected " + function.getArity() + " arguments but got " + arguments.size() + ".");
+        }
+        return function.call(this, arguments);
     }
 
     @Override

@@ -26,6 +26,7 @@ public class GenerateExpression {
         all.put("Expression", Arrays.asList(
                 "Assign   : Token name, Expression value",
                 "Binary   : Expression left, Token operator, Expression right",
+                "Call     : Expression callee, Token paren, List<Expression> arguments",
                 "Grouping : Expression expression",
                 "Literal  : Object value",
                 "Logical  : Expression left, Token operator, Expression right",
@@ -36,6 +37,8 @@ public class GenerateExpression {
         all.put("Statement", Arrays.asList(
                 "Block      : List<Statement> statements",
                 "Expression : Expression expression",
+                "Function   : Token name, List<Token> params, List<Statement> body",
+                "Return     : Token keyword, Expression value",
                 "If         : Expression condition, Statement thenBranch, Statement elseBranch",
                 "Print      : Expression expression",
                 "While      : Expression condition, Statement body",
