@@ -1,5 +1,6 @@
 package com.cc.lox;
 
+import com.cc.lox.environment.closure.Resolver;
 import com.cc.lox.interpreter.LoxInterpreter;
 import com.cc.lox.interpreter.RuntimeError;
 import com.cc.lox.parser.Parser;
@@ -101,7 +102,11 @@ public class Lox {
         if (hadError) {
             return;
         }
-
+        Resolver resolver = new Resolver(INTERPRETER);
+        resolver.resolve(statements);
+        if (hadError) {
+            return;
+        }
         INTERPRETER.interpret(statements);
     }
 

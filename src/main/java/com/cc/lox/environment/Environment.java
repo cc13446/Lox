@@ -28,23 +28,38 @@ public class Environment {
         this.enclosing = enclosing;
     }
 
+    /**
+     * @param distance env 深度
+     * @param name     name
+     * @return 值
+     */
+    public Object getAt(int distance, String name) {
+        return ancestor(distance).values.get(name);
+    }
 
     /**
-     * @return 不可变的闭包环境
+     * @param distance env 深度
+     * @param name     name
+     * @param value    value
      */
-    public Environment toClosure() {
-        List<Environment> all = new ArrayList<>();
-        Environment env = this;
-        while(Objects.nonNull(env)) {
-            all.add(env);
-            env = env.enclosing;
+    public void assignAt(Integer distance, Token name, Object value) {
+        ancestor(distance).values.put(name.getLexeme(), value);
+    }
+
+    /**
+     * @param distance 深度
+     * @return env
+     */
+    private Environment ancestor(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            if (Objects.isNull(environment)) {
+                throw new RuntimeException();
+            }
+            environment = environment.enclosing;
         }
 
-        Environment result = new Environment();
-        for (int i = all.size() - 1; i >= 0; i--) {
-            result.values.putAll(all.get(i).values);
-        }
-        return result;
+        return environment;
     }
 
     /**
@@ -95,4 +110,5 @@ public class Environment {
 
         throw new RuntimeError(name, "Undefined variable '" + name.getLexeme() + "'.");
     }
+
 }

@@ -1,7 +1,9 @@
 package com.cc.loc.expression.interpreter
 
+import com.cc.lox.environment.closure.Resolver
 import com.cc.lox.interpreter.LoxInterpreter
 import com.cc.lox.parser.Parser
+import com.cc.lox.parser.statement.Statement
 import com.cc.lox.scanner.Scanner
 import spock.lang.Specification
 
@@ -11,14 +13,18 @@ import spock.lang.Specification
  * @date 2023/10/10
  */
 class LoxInterpreterTest extends Specification {
+
     def "test interpreter"() {
         given:
         Scanner scanner = new Scanner(source)
         Parser parser = new Parser(scanner.scanTokens())
+        List<Statement> statements = parser.parse()
 
         when:
         LoxInterpreter interpreter = new LoxInterpreter()
-        interpreter.interpret(parser.parse())
+        Resolver resolver = new Resolver(interpreter)
+        resolver.resolve(statements)
+        interpreter.interpret(statements)
         def res = interpreter.getPrint()
 
         then:

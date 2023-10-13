@@ -13,9 +13,7 @@ import com.cc.lox.parser.statement.impl.*;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.scanner.type.TokenType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 计算表达式
@@ -26,7 +24,10 @@ import java.util.Objects;
 public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
     private final Environment globals = new Environment();
+
     private Environment environment = new Environment(globals);
+
+    private final Map<Expression, Integer> locals = new HashMap<>();
 
     private final StringBuilder print = new StringBuilder();
 
@@ -51,6 +52,15 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     public String getPrint() {
         return print.toString();
+    }
+
+    /**
+     * 设置变量相对环境的深度
+     * @param expression expression
+     * @param depth depth
+     */
+    public void setLocal(Expression expression, int depth) {
+        this.locals.put(expression, depth);
     }
 
     /**
@@ -102,7 +112,7 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     @Override
     public Void visitFunctionStatement(FunctionStatement statement) {
-        LoxFunction function = new LoxFunction(statement, environment.toClosure());
+        LoxFunction function = new LoxFunction(statement, environment);
         environment.define(statement.getName(), function);
         return null;
     }
@@ -153,7 +163,12 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     @Override
     public Object visitAssignExpression(AssignExpression expression) {
         Object value = evaluate(expression.getValue());
-        environment.assign(expression.getName(), value);
+        Integer distance = locals.get(expression);
+        if (distance != null) {
+            environment.assignAt(distance, expression.getName(), value);
+        } else {
+            globals.assign(expression.getName(), value);
+        }
         return value;
     }
 
@@ -266,8 +281,23 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     @Override
     public Object visitVariableExpression(VariableExpression expression) {
-        return this.environment.get(expression.getName());
+        return lookUpVariable(expression.getName(), expression);
     }
+
+    /**
+     * @param name token
+     * @param expr expression
+     * @return 变量的值
+     */
+    private Object lookUpVariable(Token name, Expression expr) {
+        Integer distance = locals.get(expr);
+        if (Objects.nonNull(distance)) {
+            return environment.getAt(distance, name.getLexeme());
+        } else {
+            return globals.get(name);
+        }
+    }
+
 
     /**
      * @param object value
