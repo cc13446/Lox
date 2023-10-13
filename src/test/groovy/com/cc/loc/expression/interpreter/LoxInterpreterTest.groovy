@@ -1,6 +1,6 @@
 package com.cc.loc.expression.interpreter
 
-import com.cc.lox.environment.closure.Resolver
+import com.cc.lox.resolve.Resolver
 import com.cc.lox.interpreter.LoxInterpreter
 import com.cc.lox.parser.Parser
 import com.cc.lox.parser.statement.Statement

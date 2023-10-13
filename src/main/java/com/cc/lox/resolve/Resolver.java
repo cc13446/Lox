@@ -1,4 +1,4 @@
-package com.cc.lox.environment.closure;
+package com.cc.lox.resolve;
 
 import com.cc.lox.Lox;
 import com.cc.lox.function.FunctionType;
@@ -14,7 +14,7 @@ import com.cc.lox.scanner.Token;
 import java.util.*;
 
 /**
- * 解析闭包，记录每个变量在环境中的位置
+ * 记录每个变量在环境中的位置
  *
  * @author cc
  * @date 2023/10/13

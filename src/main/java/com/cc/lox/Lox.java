@@ -1,8 +1,8 @@
 package com.cc.lox;
 
-import com.cc.lox.environment.closure.Resolver;
+import com.cc.lox.resolve.Resolver;
 import com.cc.lox.interpreter.LoxInterpreter;
-import com.cc.lox.interpreter.RuntimeError;
+import com.cc.lox.error.RuntimeError;
 import com.cc.lox.parser.Parser;
 import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.scanner.Scanner;

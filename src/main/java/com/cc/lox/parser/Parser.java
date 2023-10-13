@@ -1,6 +1,7 @@
 package com.cc.lox.parser;
 
 import com.cc.lox.Lox;
+import com.cc.lox.error.ParseError;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;

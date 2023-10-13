@@ -1,4 +1,4 @@
-package com.cc.lox.function.impl;
+package com.cc.lox.function;
 
 import lombok.Getter;
 

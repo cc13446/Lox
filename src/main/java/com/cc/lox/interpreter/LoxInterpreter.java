@@ -2,6 +2,7 @@ package com.cc.lox.interpreter;
 
 import com.cc.lox.Lox;
 import com.cc.lox.environment.Environment;
+import com.cc.lox.error.RuntimeError;
 import com.cc.lox.function.LoxCallable;
 import com.cc.lox.function.impl.LoxFunction;
 import com.cc.lox.parser.expression.Expression;

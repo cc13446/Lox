@@ -1,6 +1,6 @@
 package com.cc.lox.environment;
 
-import com.cc.lox.interpreter.RuntimeError;
+import com.cc.lox.error.RuntimeError;
 import com.cc.lox.scanner.Token;
 
 import java.util.*;

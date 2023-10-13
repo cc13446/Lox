@@ -1,4 +1,4 @@
-package com.cc.lox.parser;
+package com.cc.lox.error;
 
 /**
  * @author cc

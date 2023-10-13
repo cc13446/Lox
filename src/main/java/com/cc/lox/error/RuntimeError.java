@@ -1,4 +1,4 @@
-package com.cc.lox.interpreter;
+package com.cc.lox.error;
 
 import com.cc.lox.scanner.Token;
 import lombok.Getter;
