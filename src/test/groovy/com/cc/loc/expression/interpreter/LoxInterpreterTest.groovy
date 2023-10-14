@@ -31,31 +31,25 @@ class LoxInterpreterTest extends Specification {
         res == result
 
         where:
-
-        source | result
+        source                                                    | result
         """
             print 1 + 1;
-        """
-               | "2"
+        """                                            | "2"
         """
             print "aa" + "a";
-        """
-               | "aaa"
+        """                                            | "aaa"
         """
             print 1 == 1;
-        """
-               | "true"
+        """                                            | "true"
         """
             var a = 1; 
             print a;
-        """
-               | "1"
+        """                                            | "1"
         """
             var a = 1; 
             a = 2; 
             print a;
-        """
-               | "2"
+        """                                            | "2"
         """
             var a = 1; 
             {
@@ -63,16 +57,14 @@ class LoxInterpreterTest extends Specification {
                 print a;
             } 
             print a;
-        """
-               | "21"
+        """                                            | "21"
         """
             var a = 1; 
             if (a == 1) {
                 print a;
             } 
             print 2;
-        """
-               | "12"
+        """                                            | "12"
         """
             var a = 1; 
             if (a == 2 or a == 3) {
@@ -81,16 +73,14 @@ class LoxInterpreterTest extends Specification {
                 print a + 1;
             }
             print 2;
-        """
-               | "22"
+        """                                            | "22"
         """
             var a = 1;
             while (a != 10) {
                 a = a + 1;
             }
             print a;
-        """
-                | "10"
+        """                                            | "10"
         """
             var a = 0;
             var temp;
@@ -101,9 +91,7 @@ class LoxInterpreterTest extends Specification {
                 temp = a;
                 a = b;
             }
-        """
-                | "0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 "
-
+        """                                            | "0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 "
         """
             var a = "global";
             {
@@ -116,6 +104,18 @@ class LoxInterpreterTest extends Specification {
                 var a = "block";
                 showA();
             }    
-        """     | "global global"
+        """                                            | "global global"
+        """
+            class A {
+                init() {
+                    this.a = 1;
+                }  
+            }
+            
+            var a = A();
+            print a;
+            print a.a;
+        """                                            | "A(instance)1"
+
     }
 }

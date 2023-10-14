@@ -1,6 +1,8 @@
 package com.cc.lox.resolve;
 
 import com.cc.lox.Lox;
+import com.cc.lox.clazz.ClassType;
+import com.cc.lox.clazz.LoxClass;
 import com.cc.lox.function.FunctionType;
 import com.cc.lox.interpreter.LoxInterpreter;
 import com.cc.lox.parser.expression.Expression;
@@ -10,6 +12,7 @@ import com.cc.lox.parser.statement.Statement;
 import com.cc.lox.parser.statement.StatementVisitor;
 import com.cc.lox.parser.statement.impl.*;
 import com.cc.lox.scanner.Token;
+import com.cc.lox.scanner.type.TokenType;
 
 import java.util.*;
 
@@ -27,6 +30,11 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
      * 标识当前是否在函数里
      */
     private FunctionType currentFunction = FunctionType.NONE;
+
+    /**
+     * 标识当前是否在类中
+     */
+    private ClassType currentClass = ClassType.NONE;
 
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
 
@@ -156,6 +164,12 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
     }
 
     @Override
+    public Void visitGetExpression(GetExpression expression) {
+        resolve(expression.getObject());
+        return null;
+    }
+
+    @Override
     public Void visitGroupingExpression(GroupingExpression expression) {
         resolve(expression.getExpression());
         return null;
@@ -170,6 +184,23 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
     public Void visitLogicalExpression(LogicalExpression expression) {
         resolve(expression.getLeft());
         resolve(expression.getRight());
+        return null;
+    }
+
+    @Override
+    public Void visitSetExpression(SetExpression expression) {
+        resolve(expression.getValue());
+        resolve(expression.getObject());
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpression(ThisExpression expression) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expression.getKeyword(), "Can't use 'this' outside of a class.");
+            return null;
+        }
+        resolveLocal(expression, expression.getKeyword());
         return null;
     }
 
@@ -198,6 +229,26 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
     }
 
     @Override
+    public Void visitClassStatement(ClassStatement statement) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+        declare(statement.getName());
+        define(statement.getName());
+        beginScope();
+        scopes.peek().put(TokenType.THIS.getCode(), true);
+        for (FunctionStatement method : statement.getMethods()) {
+            FunctionType declaration = FunctionType.METHOD;
+            if (method.getName().getLexeme().equals(LoxClass.INIT)) {
+                declaration = FunctionType.INITIALIZER;
+            }
+            resolveFunction(method, declaration);
+        }
+        endScope();
+        currentClass = enclosingClass;
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStatement(ExpressionStatement statement) {
         resolve(statement.getExpression());
         return null;
@@ -218,6 +269,9 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
             Lox.error(statement.getKeyword(), "Can't return from top-level code.");
         }
         if (Objects.nonNull(statement.getValue())) {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                Lox.error(statement.getKeyword(), "Can't return a value from an initializer.");
+            }
             resolve(statement.getValue());
         }
         return null;

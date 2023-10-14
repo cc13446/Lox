@@ -50,6 +50,11 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     }
 
     @Override
+    public String visitGetExpression(GetExpression expression) {
+        return parenthesize(expression.getName().getLexeme(), expression.getObject());
+    }
+
+    @Override
     public String visitGroupingExpression(GroupingExpression expression) {
         return parenthesize("group", expression.getExpression());
     }
@@ -65,6 +70,16 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     @Override
     public String visitLogicalExpression(LogicalExpression expression) {
         return parenthesize(expression.getOperator().getType().name(), expression.getLeft(), expression.getRight());
+    }
+
+    @Override
+    public String visitSetExpression(SetExpression expression) {
+        return parenthesize(expression.getName().getLexeme(), expression.getObject(), expression.getValue());
+    }
+
+    @Override
+    public String visitThisExpression(ThisExpression expression) {
+        return parenthesize(expression.getKeyword().getLexeme());
     }
 
     @Override

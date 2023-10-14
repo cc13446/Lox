@@ -1,6 +1,8 @@
 package com.cc.lox.interpreter;
 
 import com.cc.lox.Lox;
+import com.cc.lox.clazz.LoxClass;
+import com.cc.lox.clazz.LoxInstance;
 import com.cc.lox.environment.Environment;
 import com.cc.lox.error.RuntimeError;
 import com.cc.lox.function.LoxCallable;
@@ -106,6 +108,20 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     }
 
     @Override
+    public Void visitClassStatement(ClassStatement statement) {
+        environment.define(statement.getName(), null);
+        Map<String, LoxFunction> methods = new HashMap<>();
+        for (FunctionStatement method : statement.getMethods()) {
+            LoxFunction function = new LoxFunction(method, environment, method.getName().getLexeme().equals(LoxClass.INIT));
+            methods.put(method.getName().getLexeme(), function);
+        }
+
+        LoxClass klass = new LoxClass(statement.getName().getLexeme(), methods);
+        environment.assign(statement.getName(), klass);
+        return null;
+   }
+
+    @Override
     public Void visitExpressionStatement(ExpressionStatement statement) {
         evaluate(statement.getExpression());
         return null;
@@ -113,7 +129,7 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     @Override
     public Void visitFunctionStatement(FunctionStatement statement) {
-        LoxFunction function = new LoxFunction(statement, environment);
+        LoxFunction function = new LoxFunction(statement, environment, false);
         environment.define(statement.getName(), function);
         return null;
     }
@@ -238,6 +254,16 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
     }
 
     @Override
+    public Object visitGetExpression(GetExpression expression) {
+        Object object = evaluate(expression.getObject());
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance) object).get(expression.getName());
+        }
+
+        throw new RuntimeError(expression.getName(), "Only instances have properties.");
+    }
+
+    @Override
     public Object visitGroupingExpression(GroupingExpression expression) {
         return evaluate(expression.getExpression());
     }
@@ -262,6 +288,24 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
         }
 
         return evaluate(expression.getRight());
+    }
+
+    @Override
+    public Object visitSetExpression(SetExpression expression) {
+        Object object = evaluate(expression.getObject());
+
+        if (!(object instanceof LoxInstance)) {
+            throw new RuntimeError(expression.getName(), "Only instances have fields.");
+        }
+
+        Object value = evaluate(expression.getValue());
+        ((LoxInstance)object).set(expression.getName(), value);
+        return value;
+    }
+
+    @Override
+    public Object visitThisExpression(ThisExpression expression) {
+        return lookUpVariable(expression.getKeyword(), expression);
     }
 
     @Override

@@ -5,5 +5,5 @@ package com.cc.lox.function;
  * @date 2023/10/13
  */
 public enum FunctionType {
-    NONE, FUNCTION
+    NONE, FUNCTION, METHOD, INITIALIZER
 }

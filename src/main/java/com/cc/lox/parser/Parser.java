@@ -2,6 +2,7 @@ package com.cc.lox.parser;
 
 import com.cc.lox.Lox;
 import com.cc.lox.error.ParseError;
+import com.cc.lox.function.FunctionType;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.impl.*;
 import com.cc.lox.parser.statement.Statement;
@@ -133,7 +134,7 @@ public class Parser {
 
     /**
      * 声明
-     * declaration -> funDeclaration | varDeclaration | statement ;
+     * declaration -> classDeclaration | funDeclaration | varDeclaration | statement ;
      *
      * @return statement
      */
@@ -144,8 +145,13 @@ public class Parser {
             }
 
             if (matchCurrentTokenAndNext(FUN)) {
-                return function("function");
+                return functionDeclaration(FunctionType.FUNCTION);
             }
+
+            if (matchCurrentTokenAndNext(CLASS)) {
+                return classDeclaration();
+            }
+
             return statement();
         } catch (ParseError error) {
             synchronize();
@@ -153,16 +159,35 @@ public class Parser {
         }
     }
 
+    /**
+     * classDecl -> "class" IDENTIFIER "{" function* "}" ;
+     *
+     * @return statement
+     */
+    private Statement classDeclaration() {
+        Token name = consumeToken(IDENTIFIER, "Expect class name.");
+        consumeToken(LEFT_BRACE, "Expect '{' before class body.");
+
+        List<FunctionStatement> methods = new ArrayList<>();
+        while (!checkCurrent(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(functionDeclaration(FunctionType.METHOD));
+        }
+
+        consumeToken(RIGHT_BRACE, "Expect '}' after class body.");
+
+        return new ClassStatement(name, methods);
+    }
+
 
     /**
-     * funDeclaration -> "fun" function ;
+     * funDeclaration -> "fun" functionDeclaration ;
      *
      * @param kind kind
      * @return statement
      */
-    private FunctionStatement function(String kind) {
-        Token name = consumeToken(IDENTIFIER, "Expect " + kind + " name.");
-        consumeToken(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+    private FunctionStatement functionDeclaration(FunctionType kind) {
+        Token name = consumeToken(IDENTIFIER, "Expect " + kind.name() + " name.");
+        consumeToken(LEFT_PAREN, "Expect '(' after " + kind.name() + " name.");
         List<Token> parameters = new ArrayList<>();
         if (!checkCurrent(RIGHT_PAREN)) {
             do {
@@ -173,7 +198,7 @@ public class Parser {
             } while (matchCurrentTokenAndNext(COMMA));
         }
         consumeToken(RIGHT_PAREN, "Expect ')' after parameters.");
-        consumeToken(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        consumeToken(LEFT_BRACE, "Expect '{' before " + kind.name() + " body.");
         List<Statement> body = block();
         return new FunctionStatement(name, parameters, body);
     }
@@ -381,7 +406,7 @@ public class Parser {
 
     /**
      * 附值
-     * assignment -> IDENTIFIER "=" assignment | logic_or ;
+     * assignment -> ( call "." )? IDENTIFIER "=" assignment | logic_or ;
      *
      * @return Expression
      */
@@ -393,6 +418,9 @@ public class Parser {
             if (expr instanceof VariableExpression) {
                 Token name = ((VariableExpression) expr).getName();
                 return new AssignExpression(name, value);
+            } else if (expr instanceof  GetExpression) {
+                GetExpression getExpression = (GetExpression) expr;
+                return new SetExpression(getExpression.getObject(), getExpression.getName(), value);
             }
             throw error(equals, "Invalid assignment target.");
         }
@@ -528,7 +556,7 @@ public class Parser {
 
     /**
      * 函数调用
-     * call -> primary ( "(" arguments? ")" )* ;
+     * call -> primary ( "(" arguments? ")" )* | "." IDENTIFIER )* ;
      *
      * @return expression
      */
@@ -537,6 +565,9 @@ public class Parser {
         while (!Thread.interrupted()) {
             if (matchCurrentTokenAndNext(LEFT_PAREN)) {
                 expression = finishCall(expression);
+            } else if (matchCurrentTokenAndNext(DOT)) {
+                Token name = consumeToken(IDENTIFIER, "Expect property name after '.'.");
+                expression = new GetExpression(expression, name);
             } else {
                 break;
             }
@@ -568,7 +599,7 @@ public class Parser {
 
     /**
      * 终止符
-     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"  | IDENTIFIER ;
+     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"  | This | IDENTIFIER ;
      *
      * @return expression
      */
@@ -591,6 +622,9 @@ public class Parser {
             Expression expr = expression();
             consumeToken(RIGHT_PAREN, "Expect ')' after expression.");
             return new GroupingExpression(expr);
+        }
+        if (matchCurrentTokenAndNext(THIS)) {
+            return new ThisExpression(previousToken());
         }
         if (matchCurrentTokenAndNext(IDENTIFIER)) {
             return new VariableExpression(previousToken());
