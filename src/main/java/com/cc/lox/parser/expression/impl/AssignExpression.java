@@ -8,6 +8,7 @@ import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;
 import com.cc.lox.scanner.Token;
 import com.cc.lox.parser.expression.Expression;
+import com.cc.lox.parser.expression.impl.*;
 
 @AllArgsConstructor
 @Getter

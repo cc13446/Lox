@@ -3,6 +3,7 @@ package com.cc.lox.clazz;
 import com.cc.lox.function.LoxCallable;
 import com.cc.lox.function.impl.LoxFunction;
 import com.cc.lox.interpreter.LoxInterpreter;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
@@ -14,22 +15,24 @@ import java.util.Objects;
  * @date 2023/10/14
  */
 @Getter
+@AllArgsConstructor
 public class LoxClass implements LoxCallable {
 
     public final static String INIT = "init";
 
     private final String name;
 
-    private final Map<String, LoxFunction> methods;
+    private final LoxClass superclass;
 
-    public LoxClass(String name, Map<String, LoxFunction> methods) {
-        this.name = name;
-        this.methods = methods;
-    }
+    private final Map<String, LoxFunction> methods;
 
     public LoxFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);
+        }
+
+        if (Objects.nonNull(superclass)) {
+            return superclass.findMethod(name);
         }
 
         return null;

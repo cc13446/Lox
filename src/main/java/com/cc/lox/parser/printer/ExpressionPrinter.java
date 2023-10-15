@@ -3,6 +3,7 @@ package com.cc.lox.parser.printer;
 import com.cc.lox.parser.expression.Expression;
 import com.cc.lox.parser.expression.ExpressionVisitor;
 import com.cc.lox.parser.expression.impl.*;
+import com.cc.lox.scanner.type.TokenType;
 
 /**
  * @author cc
@@ -75,6 +76,11 @@ public class ExpressionPrinter implements ExpressionVisitor<String> {
     @Override
     public String visitSetExpression(SetExpression expression) {
         return parenthesize(expression.getName().getLexeme(), expression.getObject(), expression.getValue());
+    }
+
+    @Override
+    public String visitSuperExpression(SuperExpression expression) {
+        return parenthesize(expression.getKeyword().getLexeme() + TokenType.DOT.getCode() +  expression.getMethod().getLexeme());
     }
 
     @Override

@@ -12,14 +12,13 @@ import com.cc.lox.parser.expression.impl.*;
 
 @AllArgsConstructor
 @Getter
-public class BinaryExpression extends Expression {
+public class SuperExpression extends Expression {
 
-    private final Expression left;
-    private final Token operator;
-    private final Expression right;
+    private final Token keyword;
+    private final Token method;
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {
-        return visitor.visitBinaryExpression(this);
+        return visitor.visitSuperExpression(this);
     }
 }

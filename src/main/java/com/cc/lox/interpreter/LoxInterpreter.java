@@ -59,8 +59,9 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     /**
      * 设置变量相对环境的深度
+     *
      * @param expression expression
-     * @param depth depth
+     * @param depth      depth
      */
     public void setLocal(Expression expression, int depth) {
         this.locals.put(expression, depth);
@@ -109,17 +110,36 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
 
     @Override
     public Void visitClassStatement(ClassStatement statement) {
+        LoxClass superclass = null;
+        if (Objects.nonNull(statement.getSuperclass())) {
+            Object object = evaluate(statement.getSuperclass());
+            if (!(object instanceof LoxClass)) {
+                throw new RuntimeError(statement.getSuperclass().getName(), "Superclass must be a class.");
+            }
+            superclass = (LoxClass) object;
+        }
+
         environment.define(statement.getName(), null);
+
+        if (Objects.nonNull(statement.getSuperclass())) {
+            environment = new Environment(environment);
+            environment.define(new Token(TokenType.SUPER, TokenType.SUPER.getCode(), TokenType.SUPER.getCode(), -1), superclass);
+        }
+
         Map<String, LoxFunction> methods = new HashMap<>();
         for (FunctionStatement method : statement.getMethods()) {
             LoxFunction function = new LoxFunction(method, environment, method.getName().getLexeme().equals(LoxClass.INIT));
             methods.put(method.getName().getLexeme(), function);
         }
 
-        LoxClass klass = new LoxClass(statement.getName().getLexeme(), methods);
+        LoxClass klass = new LoxClass(statement.getName().getLexeme(), superclass, methods);
+
+        if (Objects.nonNull(statement.getSuperclass())) {
+            environment = environment.getEnclosing();
+        }
         environment.assign(statement.getName(), klass);
         return null;
-   }
+    }
 
     @Override
     public Void visitExpressionStatement(ExpressionStatement statement) {
@@ -299,8 +319,21 @@ public class LoxInterpreter implements ExpressionVisitor<Object>, StatementVisit
         }
 
         Object value = evaluate(expression.getValue());
-        ((LoxInstance)object).set(expression.getName(), value);
+        ((LoxInstance) object).set(expression.getName(), value);
         return value;
+    }
+
+    @Override
+    public Object visitSuperExpression(SuperExpression expression) {
+        int distance = locals.get(expression);
+        LoxClass superclass = (LoxClass)environment.getAt(distance, TokenType.SUPER.getCode());
+        // 这里默认 this 会比 super 的 distance 少一, 查看: com.cc.lox.resolve.Resolver.visitClassStatement
+        LoxInstance object = (LoxInstance)environment.getAt(distance - 1, TokenType.THIS.getCode());
+        LoxFunction method = superclass.findMethod(expression.getMethod().getLexeme());
+        if (Objects.isNull(method)) {
+            throw new RuntimeError(expression.getMethod(), "Undefined property '" + expression.getMethod().getLexeme() + "'.");
+        }
+        return method.bind(object);
     }
 
     @Override

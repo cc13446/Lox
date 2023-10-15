@@ -6,5 +6,6 @@ package com.cc.lox.clazz;
  */
 public enum ClassType {
     NONE,
-    CLASS
+    CLASS,
+    SUBCLASS
 }

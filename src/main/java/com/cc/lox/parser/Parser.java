@@ -160,14 +160,17 @@ public class Parser {
     }
 
     /**
-     * classDecl -> "class" IDENTIFIER "{" function* "}" ;
+     * classDecl -> "class" IDENTIFIER  ( "<" IDENTIFIER )? "{" function* "}" ;
      *
      * @return statement
      */
     private Statement classDeclaration() {
         Token name = consumeToken(IDENTIFIER, "Expect class name.");
+        VariableExpression superclass = null;
+        if (matchCurrentTokenAndNext(LESS)) {
+            superclass = new VariableExpression(consumeToken(IDENTIFIER, "Expect superclass name."));
+        }
         consumeToken(LEFT_BRACE, "Expect '{' before class body.");
-
         List<FunctionStatement> methods = new ArrayList<>();
         while (!checkCurrent(RIGHT_BRACE) && !isAtEnd()) {
             methods.add(functionDeclaration(FunctionType.METHOD));
@@ -175,7 +178,7 @@ public class Parser {
 
         consumeToken(RIGHT_BRACE, "Expect '}' after class body.");
 
-        return new ClassStatement(name, methods);
+        return new ClassStatement(name, superclass, methods);
     }
 
 
@@ -418,7 +421,7 @@ public class Parser {
             if (expr instanceof VariableExpression) {
                 Token name = ((VariableExpression) expr).getName();
                 return new AssignExpression(name, value);
-            } else if (expr instanceof  GetExpression) {
+            } else if (expr instanceof GetExpression) {
                 GetExpression getExpression = (GetExpression) expr;
                 return new SetExpression(getExpression.getObject(), getExpression.getName(), value);
             }
@@ -599,7 +602,7 @@ public class Parser {
 
     /**
      * 终止符
-     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"  | This | IDENTIFIER ;
+     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"  | This | IDENTIFIER | "super" "." IDENTIFIER ;
      *
      * @return expression
      */
@@ -628,6 +631,12 @@ public class Parser {
         }
         if (matchCurrentTokenAndNext(IDENTIFIER)) {
             return new VariableExpression(previousToken());
+        }
+        if (matchCurrentTokenAndNext(SUPER)) {
+            Token keyword = previousToken();
+            consumeToken(DOT, "Expect '.' after 'super'.");
+            Token method = consumeToken(IDENTIFIER, "Expect superclass method name.");
+            return new SuperExpression(keyword, method);
         }
         throw error(peekToken(), "Expect expression.");
     }

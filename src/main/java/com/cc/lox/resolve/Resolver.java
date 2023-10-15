@@ -124,8 +124,9 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
 
     /**
      * 解析一个函数
+     *
      * @param function function
-     * @param type type
+     * @param type     type
      */
     private void resolveFunction(FunctionStatement function, FunctionType type) {
         FunctionType enclosingFunction = currentFunction;
@@ -195,6 +196,17 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
     }
 
     @Override
+    public Void visitSuperExpression(SuperExpression expression) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expression.getKeyword(), "Can't use 'super' outside of a class.");
+        } else if (currentClass != ClassType.SUBCLASS) {
+            Lox.error(expression.getMethod(), "Can't use 'super' in a class with no superclass.");
+        }
+        resolveLocal(expression, expression.getKeyword());
+        return null;
+    }
+
+    @Override
     public Void visitThisExpression(ThisExpression expression) {
         if (currentClass == ClassType.NONE) {
             Lox.error(expression.getKeyword(), "Can't use 'this' outside of a class.");
@@ -232,8 +244,20 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
     public Void visitClassStatement(ClassStatement statement) {
         ClassType enclosingClass = currentClass;
         currentClass = ClassType.CLASS;
+
         declare(statement.getName());
         define(statement.getName());
+
+        if (Objects.nonNull(statement.getSuperclass())) {
+            if (statement.getName().getLexeme().equals(statement.getSuperclass().getName().getLexeme())) {
+                Lox.error(statement.getSuperclass().getName(), "A class can't inherit from itself.");
+            }
+            currentClass = ClassType.SUBCLASS;
+            resolve(statement.getSuperclass());
+            beginScope();
+            scopes.peek().put(TokenType.SUPER.getCode(), true);
+        }
+
         beginScope();
         scopes.peek().put(TokenType.THIS.getCode(), true);
         for (FunctionStatement method : statement.getMethods()) {
@@ -244,6 +268,11 @@ public class Resolver implements ExpressionVisitor<Void>, StatementVisitor<Void>
             resolveFunction(method, declaration);
         }
         endScope();
+
+        if (Objects.nonNull(statement.getSuperclass())) {
+            endScope();
+        }
+
         currentClass = enclosingClass;
         return null;
     }

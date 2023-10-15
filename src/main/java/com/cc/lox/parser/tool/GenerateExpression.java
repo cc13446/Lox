@@ -32,6 +32,7 @@ public class GenerateExpression {
                 "Literal  : Object value",
                 "Logical  : Expression left, Token operator, Expression right",
                 "Set      : Expression object, Token name, Expression value",
+                "Super    : Token keyword, Token method",
                 "This     : Token keyword",
                 "Unary    : Token operator, Expression right",
                 "Variable : Token name"
@@ -39,7 +40,7 @@ public class GenerateExpression {
 
         all.put("Statement", Arrays.asList(
                 "Block      : List<Statement> statements",
-                "Class      : Token name, List<FunctionStatement> methods",
+                "Class      : Token name, VariableExpression superclass, List<FunctionStatement> methods",
                 "Expression : Expression expression",
                 "Function   : Token name, List<Token> params, List<Statement> body",
                 "Return     : Token keyword, Expression value",
@@ -113,6 +114,7 @@ public class GenerateExpression {
             writer.println("import com.cc.lox.parser." + baseName.toLowerCase() + "." + baseName + "Visitor;");
             writer.println("import com.cc.lox.scanner.Token;");
             writer.println("import com.cc.lox.parser.expression.Expression;");
+            writer.println("import com.cc.lox.parser.expression.impl.*;");
             writer.println();
             writer.println("@AllArgsConstructor");
             writer.println("@Getter");

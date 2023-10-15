@@ -2,6 +2,7 @@ package com.cc.lox.environment;
 
 import com.cc.lox.error.RuntimeError;
 import com.cc.lox.scanner.Token;
+import lombok.Getter;
 
 import java.util.*;
 
@@ -16,6 +17,7 @@ public class Environment {
     /**
      * 对外围环境的引用
      */
+    @Getter
     private final Environment enclosing;
 
     private final Map<String, Object> values = new HashMap<>();

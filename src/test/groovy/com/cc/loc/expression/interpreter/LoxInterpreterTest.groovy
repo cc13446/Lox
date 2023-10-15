@@ -116,6 +116,23 @@ class LoxInterpreterTest extends Specification {
             print a;
             print a.a;
         """                                            | "A(instance)1"
+        """
+        class Doughnut {
+            cook() {
+                print "Doughnut Cook";
+            }
+        }
+
+        class BostonCream < Doughnut {
+            cook() {
+                print "BostonCream Cook";
+                print " ";
+                super.cook();
+            }
+        }
+
+        BostonCream().cook();
+        """ | "BostonCream Cook Doughnut Cook"
 
     }
 }

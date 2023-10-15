@@ -8,6 +8,7 @@ import com.cc.lox.parser.expression.impl.GroupingExpression;
 import com.cc.lox.parser.expression.impl.LiteralExpression;
 import com.cc.lox.parser.expression.impl.LogicalExpression;
 import com.cc.lox.parser.expression.impl.SetExpression;
+import com.cc.lox.parser.expression.impl.SuperExpression;
 import com.cc.lox.parser.expression.impl.ThisExpression;
 import com.cc.lox.parser.expression.impl.UnaryExpression;
 import com.cc.lox.parser.expression.impl.VariableExpression;
@@ -21,6 +22,7 @@ public interface ExpressionVisitor<R> {
     R visitLiteralExpression(LiteralExpression expression);
     R visitLogicalExpression(LogicalExpression expression);
     R visitSetExpression(SetExpression expression);
+    R visitSuperExpression(SuperExpression expression);
     R visitThisExpression(ThisExpression expression);
     R visitUnaryExpression(UnaryExpression expression);
     R visitVariableExpression(VariableExpression expression);
